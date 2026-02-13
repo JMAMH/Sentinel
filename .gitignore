@@ -9,3 +9,11 @@ __pycache__/
 
 # VS Code
 .vscode/
+
+# Experimentos y datos locales
+experiments/
+config.json
+SentinelVault/
+.sentinel_vault/
+__pycache__/
+*.sqlite3

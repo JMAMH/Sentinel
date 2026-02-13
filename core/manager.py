@@ -3,45 +3,50 @@ import json
 import hashlib
 
 class SentinelManager:
-    def __init__(self, vault_path=None):
-        # Si no se define, usamos una carpeta por defecto en el usuario
-        if vault_path is None:
-            self.vault_path = os.path.join(os.path.expanduser("~"), ".sentinel_vault")
-        else:
-            self.vault_path = vault_path
+    def __init__(self, config_path="config.json"):
+        self.config_path = config_path
+        self.config = self._load_config()
         
-        os.makedirs(self.vault_path, exist_ok=True)
+        # Extraemos rutas del config
+        self.vault_base = self.config.get("vault_path", "./SentinelVault")
+        self.project_path = self.config.get("active_project", {}).get("path", "./experiments/poc_01_initialization/mock_project")
+        self.project_name = self.config.get("active_project", {}).get("name", "Unnamed_Project")
 
-    def get_project_id(self, project_path):
-        """Genera un ID único basado en la ruta del proyecto para evitar colisiones"""
-        return hashlib.md5(project_path.encode()).hexdigest()[:10]
-
-    def get_memory_path(self, project_path):
-        """Retorna la ruta de la memoria de Sentinel para un proyecto específico"""
-        project_name = os.path.basename(project_path)
-        project_id = self.get_project_id(project_path)
+    def _load_config(self):
+        """Lee el archivo config.json de forma segura"""
+        if not os.path.exists(self.config_path):
+            # Creamos un config básico si no existe
+            default_config = {
+                "vault_path": "./SentinelVault",
+                "active_project": {
+                    "path": "./experiments/poc_01_initialization/mock_project",
+                    "name": "POC_01_Chat_Test"
+                }
+            }
+            with open(self.config_path, "w") as f:
+                json.dump(default_config, f, indent=4)
+            return default_config
         
-        # Ruta: Vault / NombreProyecto_ID
-        memory_path = os.path.join(self.vault_path, f"{project_name}_{project_id}")
-        self._initialize_structure(memory_path)
-        return memory_path
+        with open(self.config_path, "r") as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                print(f"⚠️ Error: {self.config_path} está vacío o mal formado.")
+                return {}
 
-    def _initialize_structure(self, memory_path):
-        """Crea la jerarquía .md dentro de la Vault, no en el proyecto"""
-        folders = [
-            "identity", "project", "runtime", "state", "embeddings",
-            "memory/structure/files", "memory/logic", "memory/decisions"
+    def get_vault_for_active_project(self):
+        """Genera la ruta de la Vault (Bóveda) única para el proyecto"""
+        # Usamos ruta absoluta para el hash para que sea único
+        abs_project_path = os.path.abspath(self.project_path)
+        project_id = hashlib.md5(abs_project_path.encode()).hexdigest()[:8]
+        
+        vault_path = os.path.join(self.vault_base, f"{self.project_name}_{project_id}")
+        return os.path.abspath(vault_path)
+
+    def setup_vault_folders(self, vault_path):
+        """Crea la estructura cognitiva dentro de la Vault"""
+        structure = [
+            "identity", "project", "state", "memory/decisions"
         ]
-        for folder in folders:
-            os.makedirs(os.path.join(memory_path, folder), exist_ok=True)
-
-# --- PRUEBA DE CONCEPTO ---
-if __name__ == "__main__":
-    # Supongamos que el usuario quiere trabajar en este proyecto
-    my_code_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-    
-    manager = SentinelManager() # Usará la carpeta del sistema por defecto
-    memory_dir = manager.get_memory_path(my_code_path)
-    
-    print(f"📂 Código del usuario: {my_code_path}")
-    print(f"🧠 Memoria de Sentinel: {memory_dir}")
+        for folder in structure:
+            os.makedirs(os.path.join(vault_path, folder), exist_ok=True)
