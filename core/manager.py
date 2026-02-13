@@ -7,46 +7,30 @@ class SentinelManager:
         self.config_path = config_path
         self.config = self._load_config()
         
-        # Extraemos rutas del config
         self.vault_base = self.config.get("vault_path", "./SentinelVault")
-        self.project_path = self.config.get("active_project", {}).get("path", "./experiments/poc_01_initialization/mock_project")
-        self.project_name = self.config.get("active_project", {}).get("name", "Unnamed_Project")
+        self.project_path = self.config.get("active_project", {}).get("path", "")
+        self.project_name = self.config.get("active_project", {}).get("name", "Unknown")
+        # Nuevo: Extraer el modelo
+        self.model_id = self.config.get("ai", {}).get("model", "gemini-1.5-flash")
 
     def _load_config(self):
-        """Lee el archivo config.json de forma segura"""
         if not os.path.exists(self.config_path):
-            # Creamos un config básico si no existe
-            default_config = {
-                "vault_path": "./SentinelVault",
-                "active_project": {
-                    "path": "./experiments/poc_01_initialization/mock_project",
-                    "name": "POC_01_Chat_Test"
-                }
-            }
-            with open(self.config_path, "w") as f:
-                json.dump(default_config, f, indent=4)
-            return default_config
-        
+            return {}
         with open(self.config_path, "r") as f:
             try:
                 return json.load(f)
-            except json.JSONDecodeError:
-                print(f"⚠️ Error: {self.config_path} está vacío o mal formado.")
+            except:
                 return {}
 
     def get_vault_for_active_project(self):
-        """Genera la ruta de la Vault (Bóveda) única para el proyecto"""
-        # Usamos ruta absoluta para el hash para que sea único
-        abs_project_path = os.path.abspath(self.project_path)
-        project_id = hashlib.md5(abs_project_path.encode()).hexdigest()[:8]
-        
-        vault_path = os.path.join(self.vault_base, f"{self.project_name}_{project_id}")
-        return os.path.abspath(vault_path)
+        abs_path = os.path.abspath(self.project_path)
+        p_id = hashlib.md5(abs_path.encode()).hexdigest()[:8]
+        return os.path.abspath(os.path.join(self.vault_base, f"{self.project_name}_{p_id}"))
 
     def setup_vault_folders(self, vault_path):
-        """Crea la estructura cognitiva dentro de la Vault"""
         structure = [
-            "identity", "project", "state", "memory/decisions"
+            "identity", "project", "state", 
+            "memory/structure/files", "memory/logic"
         ]
         for folder in structure:
             os.makedirs(os.path.join(vault_path, folder), exist_ok=True)

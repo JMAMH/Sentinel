@@ -9,48 +9,46 @@ load_dotenv()
 
 class SentinelCore:
     def __init__(self):
-        # 1. Inicializar el Manager (lee config.json)
         self.manager = SentinelManager()
-        
-        # 2. Obtener y preparar la Vault
         self.vault_path = self.manager.get_vault_for_active_project()
         self.manager.setup_vault_folders(self.vault_path)
         
-        # 3. Configurar Cliente de IA
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("❌ No se encontró GEMINI_API_KEY en el archivo .env")
-            
-        self.client = genai.Client(api_key=api_key)
-        self.model = "gemini-2.5-flash"
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = self.manager.model_id
+        print(f"🤖 Sentinel inicializado con el modelo: {self.model}")
 
-    def chat_and_initialize_memory(self, user_input):
+    def perform_first_audit(self):
         """
-        POC 01: Chat inicial para definir visión e identidad.
-        Escribe en la Vault, no en el proyecto del usuario.
+        POC 02: Mira el proyecto real y documenta la estructura en la Vault.
         """
-        print(f"\n🧠 Sentinel procesando idea...")
+        print(f"🔍 Escaneando archivos en: {self.manager.project_path}...")
+        
+        # 1. Escaneo físico de archivos
+        files_list = []
+        for root, dirs, files in os.walk(self.manager.project_path):
+            for file in files:
+                rel_path = os.path.relpath(os.path.join(root, file), self.manager.project_path)
+                files_list.append(rel_path)
 
-        instruction = """
-        Eres Sentinel, un agente de IA con memoria estructurada.
-        Tu objetivo hoy es INICIALIZAR los cimientos de este proyecto basándote en lo que diga el usuario.
+        # 2. Instrucción para la IA (especificando formato Markdown)
+        instruction = f"""
+        Eres Sentinel. Estás realizando una auditoría técnica de un repositorio.
+        Archivos detectados: {files_list}
         
-        Debes generar:
-        1. 'project/vision.md': Un resumen del propósito y metas.
-        2. 'identity/sentinel.md': Cómo vas a actuar y tus reglas de oro aquí.
+        Tu tarea es generar documentación técnica para la memoria del agente.
         
-        RESPUESTA: Debes responder EXCLUSIVAMENTE en formato JSON con estas llaves:
-        {
-          "vision": "contenido para vision.md",
-          "identity": "contenido para sentinel.md",
-          "chat_response": "mensaje amigable para el usuario resumiendo lo que entendiste"
-        }
+        RESPUESTA JSON (Todo el contenido debe ser STRING en formato Markdown):
+        {{
+          "folders_summary": "# Estructura de Archivos\\n\\n(Lista de archivos con su descripción técnica)",
+          "tech_stack": "# Stack Tecnológico\\n\\n(Lista de tecnologías y lenguajes detectados)",
+          "chat_response": "(Resumen amigable para el usuario)"
+        }}
         """
 
         try:
             response = self.client.models.generate_content(
                 model=self.model,
-                contents=user_input,
+                contents="Analiza los archivos y genera la documentación técnica.",
                 config=types.GenerateContentConfig(
                     system_instruction=instruction,
                     response_mime_type="application/json"
@@ -59,35 +57,32 @@ class SentinelCore:
 
             res = json.loads(response.text)
             
-            # Guardar archivos en la Vault
-            self._write_to_vault("project/vision.md", res.get("vision", ""))
-            self._write_to_vault("identity/sentinel.md", res.get("identity", ""))
+            # 3. Guardar descubrimientos con el nuevo manejador de tipos
+            self._write_to_vault("memory/structure/folders.md", res.get("folders_summary", ""))
+            self._write_to_vault("project/stack.md", res.get("tech_stack", ""))
             
-            return res.get("chat_response", "Memoria actualizada.")
+            return res.get("chat_response", "Auditoría finalizada.")
 
         except Exception as e:
-            return f"❌ Error en la IA: {str(e)}"
+            return f"❌ Error: {str(e)}"
 
     def _write_to_vault(self, rel_path, content):
+        """Guarda contenido asegurándose de que sea string"""
         if not content: return
+        
+        # SI LA IA ENVÍA UNA LISTA, LA CONVERTIMOS A TEXTO
+        if isinstance(content, list):
+            content = "\n".join([f"- {item}" for item in content])
+        elif isinstance(content, dict):
+            content = json.dumps(content, indent=2)
+
         full_path = os.path.join(self.vault_path, rel_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        
         with open(full_path, "w", encoding="utf-8") as f:
-            f.write(content)
+            f.write(str(content)) # Aseguramos string por si acaso
         print(f"📝 Vault actualizada: {rel_path}")
 
 if __name__ == "__main__":
-    print("--- 🛡️ SENTINEL POC 01: INICIALIZACIÓN COGNITIVA ---")
-    
-    try:
-        sentinel = SentinelCore()
-        print(f"📍 Proyecto: {sentinel.manager.project_path}")
-        print(f"🔒 Vault: {sentinel.vault_path}\n")
-        
-        user_msg = input("Humano (describe tu idea): ")
-        
-        resultado = sentinel.chat_and_initialize_memory(user_msg)
-        print(f"\n🤖 Sentinel: {resultado}")
-        print("\n✅ Prueba finalizada. Revisa la carpeta SentinelVault.")
-        
-    except Exception as e:
-        print(f"💥 Error fatal: {e}")
+    sentinel = SentinelCore()
+    print(f"\n🤖 Sentinel: {sentinel.perform_first_audit()}")

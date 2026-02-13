@@ -1,8 +1,8 @@
 {
     "vault_path": "./SentinelVault",
     "active_project": {
-        "path": "./experiments/poc_01_initialization/mock_project",
-        "name": "POC_01_Chat_Test"
+        "path": "./experiments/poc_02_audit/mock_project",
+        "name": "POC_02_Audit_Test"
     },
     "ai": {
         "model": "gemini-2.5-flash",
