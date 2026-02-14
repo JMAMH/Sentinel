@@ -1,0 +1,182 @@
+/* RESET TOTAL */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0B0B0B;
+  color: #ffffff;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* LAYOUT PRINCIPAL */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* CONTENIDO DERECHO */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #0B0B0B;
+}
+
+/* CABECERA (Adaptada a tu imagen de referencia) */
+.workspace-header {
+  height: 50px;
+  background: #181818;
+  border-bottom: 1px solid #262626;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 20px;
+  gap: 10px;
+}
+
+.action-btn {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #94a3b8;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.action-btn.orange {
+  background: rgba(255, 87, 34, 0.1);
+  color: #FF5722;
+  border-color: #FF5722;
+}
+
+/* PROYECTOS GRID */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+.project-card {
+  background: #121212;
+  border: 1px solid #262626;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.project-card:hover { border-color: #FF5722; }
+
+.card-image { height: 140px; background: #1e1e1e; }
+.card-info { padding: 15px; }
+.card-info h3 { margin: 0; color: #fff; }
+.card-info p { color: #64748b; font-size: 0.85rem; margin-top: 5px; }
+
+/* WORKSPACE LAYOUT */
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.workspace-header {
+  height: 50px;
+  background: #121212;
+  border-bottom: 1px solid #262626;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.project-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #FF5722;
+}
+
+.ide-body {
+  flex: 1;
+  display: flex;
+  background: #0B0B0B;
+}
+
+/* COLUMNAS */
+.explorer-column {
+  width: 250px;
+  border-right: 1px solid #262626;
+  padding: 10px;
+}
+
+.editor-column {
+  flex: 1;
+  background: #0f0f0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-column {
+  width: 350px;
+  border-left: 1px solid #262626;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-label {
+  font-size: 0.7rem;
+  color: #4b5563;
+  font-weight: bold;
+  padding: 10px;
+  letter-spacing: 1px;
+}
+
+.chat-input-area {
+  padding: 20px;
+  border-top: 1px solid #262626;
+}
+
+.chat-input-area input {
+  width: 100%;
+  background: #181818;
+  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 6px;
+  color: white;
+  box-sizing: border-box;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.file-item {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 4px;
+}
+
+.file-item:hover {
+  background: rgba(255, 87, 34, 0.1);
+  color: #ffffff;
+}
+
+.empty-msg {
+  color: #4b5563;
+  font-size: 0.8rem;
+  padding: 10px;
+  font-style: italic;
+}

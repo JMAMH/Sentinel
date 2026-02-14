@@ -215,13 +215,6 @@ Sentinel:
 
 ---
 
-Perfecto.
-Voy a reescribir el **Capítulo 7** enfocándolo específicamente en **qué hace cada carpeta**, cuál es su función operativa dentro del sistema y cómo interactúan entre sí.
-
-Mantendré una jerarquía clara con múltiples niveles de `#` para que encaje directamente como capítulo dentro de tu documentación.
-
----
-
 # 7️⃣ Estructura Cognitiva Completa
 
 La carpeta `.ai/` es el núcleo estructural que permite a Sentinel operar con memoria persistente, coherencia técnica y continuidad estratégica.

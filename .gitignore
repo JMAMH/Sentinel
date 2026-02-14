@@ -17,3 +17,6 @@ SentinelVault/
 .sentinel_vault/
 __pycache__/
 *.sqlite3
+
+# Frontend
+node_modules/
